@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "license": "MIT",
   "description": "Create, refine, persist and embody original characters with co-writing and roleplay modes.",
   "exports": {
     ".": "./index.js",
@@ -15,7 +16,8 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "test": "node --test test/persona.test.js test/prompt.test.js test/integration.test.js"

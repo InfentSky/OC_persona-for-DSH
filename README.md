@@ -55,6 +55,8 @@ OC_persona/
 ├─ cordis.patch.yml
 ├─ index.js
 ├─ icon.svg
+├─ LICENSE
+├─ README.md
 ├─ lib/
 │  ├─ persona.js
 │  ├─ store.js
@@ -108,4 +110,6 @@ node --test .\test\persona.test.js `
 
 ## 许可
 
-插件代码与图标均为本项目原创，图标可随插件一同分发。
+本项目采用 MIT License，全文见 [LICENSE](LICENSE)。在保留版权声明和许可声明的前提下，可以自由使用、复制、修改、合并、发布、分发、再许可和销售本软件；软件按“原样”提供，不附带任何明示或默示担保。
+
+插件代码、文档与 [icon.svg](icon.svg) 均为本项目原创，均按上述许可授权。
