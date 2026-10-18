@@ -1,0 +1,6 @@
+- insert:
+    - id: oc-persona
+      name: '@local/dsh-oc-persona'
+      config:
+        promptBudget: 8000
+        defaultMode: roleplay
