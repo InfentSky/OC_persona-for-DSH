@@ -34,6 +34,9 @@ test('assist mode gets co-writing rules instead of roleplay rules', () => {
   assert.match(text, /Co-writing mode/)
   assert.doesNotMatch(text, /Roleplay mode/)
   assert.match(text, /not the character/)
+  assert.match(text, /one point/)
+  assert.match(text, /150-300 Chinese characters/)
+  assert.match(text, /persona_note/)
 })
 
 test('off mode and no card expose only the base guide', () => {

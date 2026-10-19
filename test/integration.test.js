@@ -51,7 +51,7 @@ test('registers the expected tools, prompt section, and commands', async () => {
   await apply(h.ctx, { promptBudget: 6000, defaultMode: 'assist' })
   assert.deepEqual(
     h.tools.map((tool) => tool.name),
-    ['persona_list', 'persona_read', 'persona_save', 'persona_activate', 'persona_mode', 'persona_state', 'persona_delete'],
+    ['persona_list', 'persona_read', 'persona_save', 'persona_note', 'persona_activate', 'persona_mode', 'persona_state', 'persona_delete'],
   )
   assert.equal(h.sections.length, 1)
   assert.equal(h.sections[0].order, 10250)
@@ -63,22 +63,26 @@ test('registers the expected tools, prompt section, and commands', async () => {
     assert.equal(tool.output.schema.additionalProperties, false)
     assert.equal(typeof tool.output.render, 'function')
   }
+
+  const save = h.tools.find((tool) => tool.name === 'persona_save')
+  assert.ok(save.parameters.properties.name)
+  assert.equal(save.parameters.properties.persona, undefined)
+  assert.equal(save.parameters.required, undefined)
 })
 
 test('saves, activates, and injects a character for one session only', async () => {
   const h = harness()
   await apply(h.ctx, {})
   const save = h.tools.find((tool) => tool.name === 'persona_save')
+  const note = h.tools.find((tool) => tool.name === 'persona_note')
   const activate = h.tools.find((tool) => tool.name === 'persona_activate')
   const read = h.tools.find((tool) => tool.name === 'persona_read')
 
   const saved = await save.execute({
-    persona: {
-      name: 'Lin Mo',
-      speechStyle: 'Clipped and watchful.',
-      expressions: ['jaw tightens before a lie'],
-      psychology: 'Expects betrayal.',
-    },
+    name: 'Lin Mo',
+    speechStyle: 'Clipped and watchful.',
+    expressions: ['jaw tightens before a lie'],
+    psychology: 'Expects betrayal.',
   }, { agent: { id: 'session-a' } })
   assert.match(saved.message, /Created character "Lin Mo"/)
 
@@ -92,12 +96,16 @@ test('saves, activates, and injects a character for one session only', async () 
   assert.match(prompt, /Clipped and watchful/)
   assert.match(prompt, /Roleplay mode/)
 
+  const noted = await note.execute({ text: 'Keeps old photographs in a tin box.' }, { agent: { id: 'session-a' } })
+  assert.match(noted.message, /Appended to canon/)
+
   const other = h.sections[0].text({ agent: { id: 'session-b' } })
   assert.doesNotMatch(other, /Active character: Lin Mo/)
 
   const cardText = await read.execute({ character: 'Lin Mo' }, { agent: { id: 'session-a' } })
   assert.match(cardText.message, /Lin Mo/)
   assert.match(cardText.message, /jaw tightens/)
+  assert.match(cardText.message, /Keeps old photographs/)
 })
 
 test('command surface can create, switch mode, preview, and delete', async () => {
@@ -138,7 +146,7 @@ test('deleting a character clears the session assignment and its scene state', a
   const state = h.tools.find((tool) => tool.name === 'persona_state')
   const remove = h.tools.find((tool) => tool.name === 'persona_delete')
 
-  const { message } = await save.execute({ persona: { name: 'Temporary' } }, { agent: { id: 'session-e' } })
+  const { message } = await save.execute({ name: 'Temporary' }, { agent: { id: 'session-e' } })
   assert.match(message, /Temporary/)
   await activate.execute({ character: 'Temporary', mode: 'assist' }, { agent: { id: 'session-e' } })
   await state.execute({ scene: 'somewhere', mood: 'tense' }, { agent: { id: 'session-e' } })
@@ -163,7 +171,7 @@ test('state updates require an active character and flow into the prompt', async
     state.execute({ scene: 'rooftop' }, { agent: { id: 'session-d' } }),
     /no active character/,
   )
-  await save.execute({ persona: { name: 'Yan' } }, { agent: { id: 'session-d' } })
+  await save.execute({ name: 'Yan' }, { agent: { id: 'session-d' } })
   await activate.execute({ character: 'Yan', mode: 'assist' }, { agent: { id: 'session-d' } })
   await state.execute({ scene: 'A rooftop at midnight', mood: 'restless' }, { agent: { id: 'session-d' } })
   const prompt = h.sections[0].text({ agent: { id: 'session-d' } })
