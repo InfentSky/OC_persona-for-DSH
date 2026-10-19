@@ -108,6 +108,36 @@ test('saves, activates, and injects a character for one session only', async () 
   assert.match(cardText.message, /Keeps old photographs/)
 })
 
+test('updates speechStyle and addressStyle by name, including the legacy mixed shape', async () => {
+  const h = harness()
+  await apply(h.ctx, {})
+  const save = h.tools.find((tool) => tool.name === 'persona_save')
+  const read = h.tools.find((tool) => tool.name === 'persona_read')
+
+  await save.execute({ name: 'Voice Test', speechStyle: 'old voice', addressStyle: 'old address' }, { agent: { id: 'session-f' } })
+
+  const flat = await save.execute({
+    name: 'Voice Test',
+    speechStyle: '第一人称：我。第二人称：你。',
+    addressStyle: '对他人一律称「你」。',
+  }, { agent: { id: 'session-f' } })
+  assert.match(flat.message, /Updated character "Voice Test"/)
+
+  const cardText = await read.execute({ character: 'Voice Test' }, { agent: { id: 'session-f' } })
+  assert.match(cardText.message, /第一人称：我/)
+  assert.match(cardText.message, /对他人一律称「你」/)
+
+  const mixed = await save.execute({
+    name: 'Voice Test',
+    persona: { speechStyle: 'mixed voice', addressStyle: 'mixed address' },
+  }, { agent: { id: 'session-f' } })
+  assert.match(mixed.message, /Updated character "Voice Test"/)
+
+  const mixedText = await read.execute({ character: 'Voice Test' }, { agent: { id: 'session-f' } })
+  assert.match(mixedText.message, /mixed voice/)
+  assert.match(mixedText.message, /mixed address/)
+})
+
 test('command surface can create, switch mode, preview, and delete', async () => {
   const h = harness()
   await apply(h.ctx, { defaultMode: 'roleplay' })
